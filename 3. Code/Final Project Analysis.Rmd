@@ -9,3 +9,22 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r Load Packages}
+library(tidyverse) # load the installed package for each new session of R
+library(broom) # helps for storing regression output
+library(here) # for file organization
+library(psych) # For creating summary statistics table
+
+```
+
+```{r Data Cleaning}
+here()
+
+
+```
+
+
+```{r Summary Statistics}
+
+```
+
