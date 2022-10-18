@@ -23,8 +23,9 @@ raw_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/
                      na.strings = c(" ", "", "NA", "9999: Missing")) # Load original data
 
 analysis_data <- raw_data[, c("self_rated_mental_health", "occupation",
-                              "money_concerned", "housing_satisfaction",
-                              "work_unsustainable")]
+                              "employment_impact_not_employed", "money_concerned",
+                              "housing_satisfaction", "work_unsustainable",
+                              "employment_impact_laid_off", "work_from_home")]
 
 # Scan through analysis dataframe to see variable class types
 for(values in names(analysis_data)){
@@ -36,7 +37,7 @@ for(values in names(analysis_data)){
 
 
 
-analysis_data[, 1:5] <- lapply(analysis_data[, 1:5], as.factor)
+analysis_data[, 1:8] <- lapply(analysis_data[, 1:8], as.factor)
 
 
 
@@ -46,5 +47,12 @@ analysis_data[, 1:5] <- lapply(analysis_data[, 1:5], as.factor)
 ```{r Summary Statistics}
 summary_table <- tbl_summary(analysis_data)
 gt::gtsave(as_gt(summary_table), filename = "//Users//aidanbodner//Desktop//Summary.png")
+
+# Cross tab between occupation and unemployment
+descr::crosstab(analysis_data$employment_impact_not_employed, analysis_data$employment_impact_laid_off)
+
+descr::crosstab(analysis_data$employment_impact_laid_off, analysis_data$work_from_home)
+
+
 ```
 
