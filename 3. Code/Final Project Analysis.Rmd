@@ -26,7 +26,10 @@ raw_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/
 analysis_data <- raw_data[, c("self_rated_mental_health", "occupation",
                               "employment_impact_not_employed", "money_concerned",
                               "housing_satisfaction", "work_unsustainable",
-                              "employment_impact_laid_off", "work_from_home")]
+                              "employment_impact_laid_off", "work_from_home",
+                              "age_groups", "gender", "identity_lgbtq", "identity_bipoc",
+                              "educational_attainment", "income", "own_rent",
+                              "province")]
 
 # Scan through analysis dataframe to see variable class types
 for(values in names(analysis_data)){
@@ -38,30 +41,67 @@ for(values in names(analysis_data)){
 # Remove people who were not working before the COVID-19 pandemic
 analysis_data <- analysis_data[!analysis_data$employment_impact_not_employed == "I was not employed or self-employed before the COVID-19", ]
 
-# Clean Labels 
+##### Clean Labels ####
+# Laid off during COVID
 analysis_data$employment_impact_laid_off[analysis_data$employment_impact_laid_off == "8888: Not Selected"] <- "No"
 analysis_data$employment_impact_laid_off[analysis_data$employment_impact_laid_off == "I was laid off temporarily or permanently"] <- "Yes"
 
+# Work from home
 analysis_data$work_unsustainable[analysis_data$work_unsustainable == "8888:Not Working During COVID"] <- "I was not working during COVID-19"
 
+# Sexual minority
+analysis_data$identity_lgbtq[analysis_data$identity_lgbtq == "8888: Not Selected"] <- "No"
+analysis_data$identity_lgbtq[analysis_data$identity_lgbtq == "Sexual or gender minorities (e.g., LGBTQ2+)"] <- "Yes"
+
+# People of Colour
+analysis_data$identity_bipoc[analysis_data$identity_bipoc == "8888: Not Selected"] <- "No"
+analysis_data$identity_bipoc[analysis_data$identity_bipoc == "People of colour (e.g., Black, Indigenous, Asian  or other racialized minority)"] <- "Yes"
+
 # Convert to factor
-analysis_data[, 1:8] <- lapply(analysis_data[, 1:8], as.factor)
+analysis_data[, 1:16] <- lapply(analysis_data[, 1:16], as.factor)
+
+### Reorder levels of certain variables ###
+
+
+
+
 ```
 
 
 ```{r Summary Statistics}
 table_data <- analysis_data[, c("self_rated_mental_health", "occupation", 
                                 "money_concerned","housing_satisfaction", 
-                                "work_unsustainable", "employment_impact_laid_off")]
+                                "work_unsustainable", "employment_impact_laid_off",
+                                "age_groups", "gender", "identity_lgbtq", "identity_bipoc",
+                                "educational_attainment", "income", "own_rent",
+                                "province")]
 
 summary_table <- tbl_summary(analysis_data, include = c("self_rated_mental_health", "occupation",
-                                                           "money_concerned","housing_satisfaction", 
-                                                           "work_unsustainable", "employment_impact_laid_off"),
+                                                        "money_concerned","housing_satisfaction",
+                                                        "work_unsustainable", "employment_impact_laid_off",
+                                                        "age_groups", "gender", "identity_lgbtq", "identity_bipoc",
+                                                        "educational_attainment", "income", "own_rent",
+                                                        "province"),
                              label = list(self_rated_mental_health ~ "Self-Rated Mental Health",
-                                                      occupation ~ "Occupation",
-                                                      money_concerned ~ "Concerned that the money I have or will save wont last", housing_satisfaction ~ "Satisfaction with current living arrangements", work_unsustainable ~ "Work-load is unsustainable", employment_impact_laid_off ~ "Laid off temporarily or permanently"), missing = "no", type = list(employment_impact_laid_off ~ "categorical")) %>%
+                                          occupation ~ "Occupation",
+                                          money_concerned ~ "Concerned that the money I have or will save wont last",
+                                          housing_satisfaction ~ "Satisfaction with current living arrangements", 
+                                          work_unsustainable ~ "Work-load is unsustainable", 
+                                          employment_impact_laid_off ~ "Laid off temporarily or permanently", 
+                                          age_groups ~ "Age", 
+                                          gender ~ "Gender", 
+                                          identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
+                                          identity_bipoc ~ "Person of colour (e.g., Black, Indigenous, Asian  or other racialized minority)",
+                                          educational_attainment ~ "Educational Attainment",
+                                          income ~ "Income",
+                                          own_rent ~ "Dwelling Ownership",
+                                          province ~ "Province"), 
+                             missing = "no", 
+                             type = list(employment_impact_laid_off ~ "categorical", 
+                                         identity_lgbtq ~ "categorical",
+                                         identity_bipoc ~ "categorical")) %>% 
   as_gt %>%
-  gt::gtsave(filename = "//Users//aidanbodner//Desktop//Summary.html")
+  gt::gtsave(filename = "//Users//aidanbodner//Desktop//Summary.docx")
 
 
 # Cross tab between occupation and unemployment
