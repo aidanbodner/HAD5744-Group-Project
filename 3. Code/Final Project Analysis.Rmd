@@ -23,13 +23,13 @@ here() # Set working directory
 raw_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/1. Data/data.csv", 
                      na.strings = c(" ", "", "NA", "9999: Missing")) # Load original data
 
-analysis_data <- raw_data[, c("self_rated_mental_health", "occupation",
-                              "employment_impact_not_employed", "money_concerned",
-                              "housing_satisfaction", "employment_impact_laid_off", 
+analysis_data <- raw_data[, c("gad_anxious", "gad_worry", "phq_little_interest", 
+                              "phq_feeling_down", "occupation","employment_impact_not_employed", 
+                              "money_concerned","employment_impact_laid_off", 
                               "work_from_home", "age_groups", "gender", 
                               "identity_lgbtq", "identity_bipoc",
                               "educational_attainment", "income", 
-                              "own_rent", "province")]
+                              "own_rent")]
 
 # Scan through analysis dataframe to see variable class types
 for(values in names(analysis_data)){
@@ -56,7 +56,7 @@ analysis_data$identity_bipoc[analysis_data$identity_bipoc == "8888: Not Selected
 analysis_data$identity_bipoc[analysis_data$identity_bipoc == "People of colour (e.g., Black, Indigenous, Asian  or other racialized minority)"] <- "Yes"
 
 # Convert to factor
-analysis_data[, 1:15] <- lapply(analysis_data[, 1:15], as.factor)
+analysis_data[, 1:16] <- lapply(analysis_data[, 1:16], as.factor)
 
 ### Reorder levels of certain variables ###
 
@@ -67,23 +67,26 @@ analysis_data[, 1:15] <- lapply(analysis_data[, 1:15], as.factor)
 
 
 ```{r Summary Statistics}
-table_data <- analysis_data[, c("self_rated_mental_health", "occupation", 
-                                "money_concerned","housing_satisfaction", 
-                                "employment_impact_laid_off", "age_groups", 
-                                "gender", "identity_lgbtq", "identity_bipoc",
-                                "educational_attainment", "income", "own_rent",
-                                "province")]
+table_data <- analysis_data[, c("gad_anxious", "gad_worry", "phq_little_interest", 
+                              "phq_feeling_down", "occupation","employment_impact_not_employed", 
+                              "money_concerned","employment_impact_laid_off", 
+                              "work_from_home", "age_groups", "gender", 
+                              "identity_lgbtq", "identity_bipoc",
+                              "educational_attainment", "income", 
+                              "own_rent")]
 
-summary_table <- tbl_summary(analysis_data, include = c("self_rated_mental_health", "occupation",
-                                                        "money_concerned","housing_satisfaction",
-                                                        "employment_impact_laid_off", "age_groups", 
+summary_table <- tbl_summary(analysis_data, include = c("gad_anxious", "gad_worry", "phq_little_interest", 
+                                                        "phq_feeling_down", "occupation",
+                                                        "money_concerned", "employment_impact_laid_off", "age_groups", 
                                                         "gender", "identity_lgbtq", "identity_bipoc",
-                                                        "educational_attainment", "income", "own_rent",
-                                                        "province"),
-                             label = list(self_rated_mental_health ~ "Self-Rated Mental Health",
+                                                        "educational_attainment", "income", "own_rent"),
+                             by = employment_impact_laid_off,
+                             label = list(gad_anxious ~ "Over the past two weeks, how often have you felt nervous, anxious or on edge?",
+                                          gad_worry ~ "Over the past two weeks, how often were you not able to stop worrying or control your worries?",
+                                          phq_little_interest ~ "Over the past two weeks, how often have you had little interest or pleasure in doing things?",
+                                          phq_feeling_down ~ "Over the PAST TWO WEEKS, how often were you feeling down, depressed or hopeless? ",
                                           occupation ~ "Occupation",
                                           money_concerned ~ "Concerned that the money I have or will save wont last",
-                                          housing_satisfaction ~ "Satisfaction with current living arrangements",  
                                           employment_impact_laid_off ~ "Laid off temporarily or permanently", 
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
@@ -91,8 +94,7 @@ summary_table <- tbl_summary(analysis_data, include = c("self_rated_mental_healt
                                           identity_bipoc ~ "Person of colour (e.g., Black, Indigenous, Asian  or other racialized minority)",
                                           educational_attainment ~ "Educational Attainment",
                                           income ~ "Income",
-                                          own_rent ~ "Dwelling Ownership",
-                                          province ~ "Province"), 
+                                          own_rent ~ "Dwelling Ownership"), 
                              missing = "no", 
                              type = list(employment_impact_laid_off ~ "categorical", 
                                          identity_lgbtq ~ "categorical",
