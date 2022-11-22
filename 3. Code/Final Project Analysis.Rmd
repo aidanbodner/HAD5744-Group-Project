@@ -371,8 +371,17 @@ balance_table <- tbl_merge(tbls = list(unmatched_table,
 gad_reg <- lm(gad_total ~ money_fetting_by, data = analysis_match_data)
 summary(gad_reg)
 
+gad_reg_covariates <- lm(gad_total ~ money_fetting_by + occupation + money_fetting_by + employment_impact_laid_off + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
+summary(gad_reg_covariates)
+
+
+
 phq_reg <- lm(phq_total ~ money_fetting_by, data = analysis_match_data)
 summary(phq_reg)
+
+
+phq_reg_covariates <- lm(phq_total ~ money_fetting_by + occupation + money_fetting_by + employment_impact_laid_off + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
+summary(phq_reg_covariates)
 
 ```
 
