@@ -239,7 +239,6 @@ analysis_data$employment_impact_laid_off <- as.factor(analysis_data$employment_i
 imputed_data <- mice(analysis_data, m = 5, maxit=50, method='pmm')
 impute_convert <- complete(imputed_data)
 
-write.csv(impute_convert, "/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
 analysis_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
 
 ```
@@ -305,33 +304,6 @@ analysis_data$own_rent <- as.factor(analysis_data$own_rent)
 
 unmatched_table <- tbl_summary(analysis_data, include = c("occupation",
                                                         "money_fetting_by", "employment_impact_laid_off", "age_groups", 
-                                                        "gender", "identity_lgbtq", "identity_bipoc",
-                                                        "educational_attainment", "income", "own_rent"),
-                             by = employment_impact_laid_off,
-                             label = list(occupation ~ "Occupation",
-                                          money_fetting_by ~ "Concerned that the money I have or will save wont last",
-                                          employment_impact_laid_off ~ "Laid off temporarily or permanently", 
-                                          age_groups ~ "Age", 
-                                          gender ~ "Gender", 
-                                          identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
-                                          identity_bipoc ~ "Person of colour (e.g., Black, Indigenous, Asian  or other racialized minority)",
-                                          income ~ "Income",
-                                          own_rent ~ "Dwelling Ownership"), 
-                             missing = "no", 
-                             type = list(employment_impact_laid_off ~ "categorical", 
-                                         identity_lgbtq ~ "categorical",
-                                         identity_bipoc ~ "categorical",
-                                         occupation ~ "categorical",
-                                         age_groups ~ "categorical",
-                                         income ~ "categorical",
-                                         own_rent ~ "categorical",
-                                         gender ~ "categorical")) %>% 
-  add_p(test = everything() ~ "fisher.test")
-
-
-
-match_table <- tbl_summary(analysis_match_data, include = c("occupation",
-                                                        "money_fetting_by", "employment_impact_laid_off", "age_groups", 
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
                              by = employment_impact_laid_off,
                              label = list(occupation ~ "Occupation",
@@ -351,6 +323,34 @@ match_table <- tbl_summary(analysis_match_data, include = c("occupation",
                                          age_groups ~ "categorical",
                                          income ~ "categorical",
                                          own_rent ~ "categorical",
+                                         gender ~ "categorical",
+                                         money_fetting_by ~ "categorical")) %>% 
+  add_p(test = everything() ~ "fisher.test")
+
+
+
+match_table <- tbl_summary(analysis_match_data, include = c("occupation",
+                                                        "money_fetting_by", "employment_impact_laid_off", "age_groups", 
+                                                        "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
+                             by = employment_impact_laid_off,
+                             label = list(occupation ~ "Occupation",
+                                          money_fetting_by ~ "Concerned that the money I have or will save wont last",
+                                          employment_impact_laid_off ~ "Laid off temporarily or permanently", 
+                                          age_groups ~ "Age", 
+                                          gender ~ "Gender", 
+                                          identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
+                                          identity_bipoc ~ "Person of colour (e.g., Black, Indigenous, Asian  or other racialized minority)",
+                                          income ~ "Income",
+                                          own_rent ~ "Dwelling Ownership",
+                                          money_fetting_by ~ "I am just getting by financially"), 
+                             missing = "no", 
+                             type = list(employment_impact_laid_off ~ "categorical", 
+                                         identity_lgbtq ~ "categorical",
+                                         identity_bipoc ~ "categorical",
+                                         occupation ~ "categorical",
+                                         age_groups ~ "categorical",
+                                         income ~ "categorical",
+                                         own_rent ~ "categorical",
                                          gender ~ "categorical")) %>% 
   add_p(test = everything() ~ "fisher.test") 
 
@@ -358,7 +358,10 @@ match_table <- tbl_summary(analysis_match_data, include = c("occupation",
 balance_table <- tbl_merge(tbls = list(unmatched_table,
                                       match_table),
                           tab_spanner = c("UnMatched Balance Table",
-                                          "Nearest Neighbour Matched Balance Table"))
+                                          "Nearest Neighbour Matched Balance Table")) %>%
+  as_gt %>%
+  gt::gtsave(file = "//Users//aidanbodner//Desktop//balance_table.ltx")
+
 
 
 
