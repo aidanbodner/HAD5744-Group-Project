@@ -108,7 +108,7 @@ analysis_data$occupation[analysis_data$occupation == "Health occupations" ] <- "
 analysis_data$occupation[analysis_data$occupation == 
                            "Natural and applied sciences and related occupationss"] <- "Health & Sciences"
 
-# Extent to which I’m Concerned that the money I have or will save wont last
+# How well do each of the statements describe you? - I am just getting by financially.
 analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Completely"] <- "Yes"
 analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Well"] <- "Yes"
 analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Somewhat"] <- "Yes"
@@ -230,8 +230,6 @@ analysis_data$identity_bipoc <- as.factor(analysis_data$identity_bipoc)
 analysis_data$income <- as.factor(analysis_data$income)
 analysis_data$own_rent <- as.factor(analysis_data$own_rent)
 analysis_data$employment_impact_laid_off <- as.factor(analysis_data$employment_impact_laid_off)
-#analysis_data$educational_attainment <- as.factor(analysis_data$educational_attainment)
-#analysis_data$work_from_home <- as.factor(analysis_data$work_from_home)
 
 
 
