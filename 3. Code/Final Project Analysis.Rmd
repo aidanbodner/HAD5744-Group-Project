@@ -211,7 +211,7 @@ analysis_data <- analysis_data[, c("gad_total", "phq_total", "occupation","money
                               "identity_lgbtq", "identity_bipoc","income", 
                               "own_rent")]
 
-#Remove ineligible participants
+# Number of missing
 #analysis_data <- na.omit(analysis_data)
 
 
