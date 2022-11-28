@@ -246,14 +246,13 @@ analysis_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Pro
 
 
 ```{r Summary Statistics}
-table_data <- analysis_data[, c("gad_total", "phq_total", "occupation","employment_impact_not_employed", 
-                              "money_fetting_by","employment_impact_laid_off",  "age_groups", "gender", 
+table_data <- analysis_data[, c("gad_total", "phq_total", "occupation", 
+                              "money_fetting_by","employment_impact_laid_off","age_groups", "gender", 
                               "identity_lgbtq", "identity_bipoc", "income", "own_rent")]
 
 summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total", "occupation",
                                                         "money_fetting_by", "employment_impact_laid_off", "age_groups", 
-                                                        "gender", "identity_lgbtq", "identity_bipoc",
-                                                        "educational_attainment", "income", "own_rent"),
+                                                        "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
                              by = employment_impact_laid_off,
                              label = list(gad_total ~ "GAD Score",
                                           phq_total ~ "PHQ Score",
@@ -264,7 +263,6 @@ summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total"
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
                                           identity_bipoc ~ "Person of colour (e.g., Black, Indigenous, Asian  or other racialized minority)",
-                                          educational_attainment ~ "Educational Attainment",
                                           income ~ "Income",
                                           own_rent ~ "Dwelling Ownership"), 
                              missing = "no", 
