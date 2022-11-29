@@ -243,8 +243,6 @@ analysis_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Pro
 
 ```
 
-
-
 ```{r Summary Statistics}
 
 summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total", "occupation",
