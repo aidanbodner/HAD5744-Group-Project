@@ -239,7 +239,7 @@ impute_convert <- complete(imputed_data)
 
 write.csv(impute_convert, "/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
 
-analysis_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
+analysis_data <- read.csv("/Users/husaynjessa/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
 
 ```
 
@@ -369,7 +369,7 @@ balance_table <- tbl_merge(tbls = list(unmatched_table,
 gad_reg <- lm(gad_total ~ money_fetting_by, data = analysis_match_data)
 summary(gad_reg)
 
-gad_reg_covariates <- lm(gad_total ~ money_fetting_by + occupation + employment_impact_laid_off + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
+gad_reg_covariates <- lm(gad_total ~ money_fetting_by + occupation + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
 summary(gad_reg_covariates)
 
 
@@ -378,12 +378,13 @@ phq_reg <- lm(phq_total ~ money_fetting_by, data = analysis_match_data)
 summary(phq_reg)
 
 
-phq_reg_covariates <- lm(phq_total ~ money_fetting_by + occupation + money_fetting_by + employment_impact_laid_off + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
+phq_reg_covariates <- lm(phq_total ~ money_fetting_by + occupation + money_fetting_by + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
 summary(phq_reg_covariates)
 
 phq_reg <- lm(phq_total ~ money_fetting_by, data = analysis_match_data)
 summary(phq_reg)
 
+#the regressions including the covariates and excluding them look similar and thus it can be noted that our match is of sufficient quality to run the regression without including the covariates 
 ```
 
 
