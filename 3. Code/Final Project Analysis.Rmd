@@ -16,7 +16,7 @@ library(here) # for file organization
 library(gtsummary) # For creating summary statistics table
 library(gt) # For outputting gt objects
 library(MatchIt) # For matching
-library(mice)
+library(mice) # For imputation
 ```
 
 ```{r Data Cleaning}
@@ -246,19 +246,15 @@ analysis_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Pro
 
 
 ```{r Summary Statistics}
-table_data <- analysis_data[, c("gad_total", "phq_total", "occupation", 
-                              "money_fetting_by","employment_impact_laid_off","age_groups", "gender", 
-                              "identity_lgbtq", "identity_bipoc", "income", "own_rent")]
 
 summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total", "occupation",
-                                                        "money_fetting_by", "employment_impact_laid_off", "age_groups", 
+                                                        "money_fetting_by", "age_groups", 
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
-                             by = employment_impact_laid_off,
+                             by = money_fetting_by,
                              label = list(gad_total ~ "GAD Score",
                                           phq_total ~ "PHQ Score",
                                           occupation ~ "Occupation",
                                           money_fetting_by ~ "Concerned that the money I have or will save wont last",
-                                          employment_impact_laid_off ~ "Laid off temporarily or permanently", 
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
@@ -266,14 +262,24 @@ summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total"
                                           income ~ "Income",
                                           own_rent ~ "Dwelling Ownership"), 
                              missing = "no", 
-                             type = list(employment_impact_laid_off ~ "categorical", 
-                                         identity_lgbtq ~ "categorical",
-                                         identity_bipoc ~ "categorical")) %>% 
+                             type = list(identity_lgbtq ~ "categorical",
+                                         identity_bipoc ~ "categorical",
+                                         occupation ~ "categorical",
+                                         age_groups ~ "categorical",
+                                         income ~ "categorical",
+                                         own_rent ~ "categorical",
+                                         gender ~ "categorical")) %>% 
   as_gt %>%
-  gt::gtsave(filename = "//Users//husaynjessa//Desktop//Summary.docx")
+  gt::gtsave(filename = "//Users//aidanbodner//Desktop//Summary.docx")
 
 
 ```
+
+
+```{r Summary Stats by }
+
+```
+
 
 
 ```{r Matching}
@@ -299,12 +305,11 @@ analysis_data$own_rent <- as.factor(analysis_data$own_rent)
 
 
 unmatched_table <- tbl_summary(analysis_data, include = c("occupation",
-                                                        "money_fetting_by", "employment_impact_laid_off", "age_groups", 
+                                                        "money_fetting_by", "age_groups", 
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
-                             by = employment_impact_laid_off,
+                             by = money_fetting_by,
                              label = list(occupation ~ "Occupation",
                                           money_fetting_by ~ "Concerned that the money I have or will save wont last",
-                                          employment_impact_laid_off ~ "Laid off temporarily or permanently", 
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
@@ -312,8 +317,7 @@ unmatched_table <- tbl_summary(analysis_data, include = c("occupation",
                                           income ~ "Income",
                                           own_rent ~ "Dwelling Ownership"), 
                              missing = "no", 
-                             type = list(employment_impact_laid_off ~ "categorical", 
-                                         identity_lgbtq ~ "categorical",
+                             type = list(identity_lgbtq ~ "categorical",
                                          identity_bipoc ~ "categorical",
                                          occupation ~ "categorical",
                                          age_groups ~ "categorical",
@@ -326,12 +330,11 @@ unmatched_table <- tbl_summary(analysis_data, include = c("occupation",
 
 
 match_table <- tbl_summary(analysis_match_data, include = c("occupation",
-                                                        "money_fetting_by", "employment_impact_laid_off", "age_groups", 
+                                                        "money_fetting_by", "age_groups", 
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
-                             by = employment_impact_laid_off,
+                             by = money_fetting_by,
                              label = list(occupation ~ "Occupation",
                                           money_fetting_by ~ "Concerned that the money I have or will save wont last",
-                                          employment_impact_laid_off ~ "Laid off temporarily or permanently", 
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
@@ -340,8 +343,7 @@ match_table <- tbl_summary(analysis_match_data, include = c("occupation",
                                           own_rent ~ "Dwelling Ownership",
                                           money_fetting_by ~ "I am just getting by financially"),
                              missing = "no", 
-                             type = list(employment_impact_laid_off ~ "categorical", 
-                                         identity_lgbtq ~ "categorical",
+                             type = list(identity_lgbtq ~ "categorical",
                                          identity_bipoc ~ "categorical",
                                          occupation ~ "categorical",
                                          age_groups ~ "categorical",
@@ -356,7 +358,7 @@ balance_table <- tbl_merge(tbls = list(unmatched_table,
                           tab_spanner = c("UnMatched Balance Table",
                                           "Nearest Neighbour Matched Balance Table")) %>%
   as_gt %>%
-  gt::gtsave(file = "//Users//aidanbodner//Desktop//balance_table.ltx")
+  gt::gtsave(file = "//Users//aidanbodner//Desktop//balance_table.rtf")
 
 
 
@@ -369,7 +371,7 @@ balance_table <- tbl_merge(tbls = list(unmatched_table,
 gad_reg <- lm(gad_total ~ money_fetting_by, data = analysis_match_data)
 summary(gad_reg)
 
-gad_reg_covariates <- lm(gad_total ~ money_fetting_by + occupation + money_fetting_by + employment_impact_laid_off + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
+gad_reg_covariates <- lm(gad_total ~ money_fetting_by + occupation + employment_impact_laid_off + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
 summary(gad_reg_covariates)
 
 
