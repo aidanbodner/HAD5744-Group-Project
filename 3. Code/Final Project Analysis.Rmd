@@ -17,6 +17,7 @@ library(gtsummary) # For creating summary statistics table
 library(gt) # For outputting gt objects
 library(MatchIt) # For matching
 library(mice) # For imputation
+library(modelsummary) # For regression tables
 ```
 
 ```{r Data Cleaning}
@@ -26,7 +27,7 @@ raw_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/
 
 analysis_data <- raw_data[, c("gad_anxious", "gad_worry", "phq_little_interest", 
                               "phq_feeling_down", "occupation","employment_impact_not_employed", 
-                              "money_fetting_by","employment_impact_laid_off", "age_groups", "gender", 
+                              "money_fetting_by","employment_impact_laid_off", "age_groups", "gender",
                               "identity_lgbtq", "identity_bipoc",
                               "educational_attainment", "income", 
                               "own_rent")]
@@ -207,9 +208,10 @@ analysis_data$identity_bipoc[analysis_data$identity_bipoc == "8888: Not Selected
 analysis_data$identity_bipoc[analysis_data$identity_bipoc == "People of colour (e.g., Black, Indigenous, Asian  or other racialized minority)"] <- "Yes"
 
 
-analysis_data <- analysis_data[, c("gad_total", "phq_total", "occupation","money_fetting_by","employment_impact_laid_off", "age_groups", "gender", 
-                              "identity_lgbtq", "identity_bipoc","income", 
-                              "own_rent")]
+
+
+
+analysis_data <- analysis_data[, c("gad_total", "phq_total", "occupation","employment_impact_laid_off", "age_groups", "gender", "identity_lgbtq", "identity_bipoc","income", "own_rent", "money_fetting_by")]
 
 # Number of missing
 #analysis_data <- na.omit(analysis_data)
@@ -234,14 +236,17 @@ analysis_data$employment_impact_laid_off <- as.factor(analysis_data$employment_i
 
 
 
+
 imputed_data <- mice(analysis_data, m = 5, maxit=50, method='pmm')
 impute_convert <- complete(imputed_data)
 
 write.csv(impute_convert, "/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
 
-analysis_data <- read.csv("/Users/husaynjessa/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
+analysis_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Project/1. Data/imputed_data.csv")
 
 ```
+
+
 
 ```{r Summary Statistics}
 
@@ -281,16 +286,16 @@ summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total"
 
 
 ```{r Matching}
-analysis_match <- matchit(money_fetting_by ~ occupation + age_groups + gender + identity_lgbtq +
+analysis_match <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
                             identity_bipoc + income + own_rent,
                             data = analysis_data,
                             method = "exact")
 
 summary(analysis_match)
-
 analysis_match_data <-  match.data(analysis_match)
 
 analysis_data$occupation <- as.factor(analysis_data$occupation)
+analysis_data$employment_impact_laid_off <- as.factor(analysis_data$employment_impact_laid_off)
 analysis_data$money_fetting_by <- as.factor(analysis_data$money_fetting_by)
 analysis_data$age_groups <- as.factor(analysis_data$age_groups)
 analysis_data$gender <- as.factor(analysis_data$gender)
@@ -302,10 +307,10 @@ analysis_data$own_rent <- as.factor(analysis_data$own_rent)
 
 
 
-unmatched_table <- tbl_summary(analysis_data, include = c("occupation",
+unmatched_table <- tbl_summary(analysis_data, include = c("occupation", "employment_impact_laid_off",
                                                         "money_fetting_by", "age_groups", 
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
-                             by = money_fetting_by,
+                             by = employment_impact_laid_off,
                              label = list(occupation ~ "Occupation",
                                           money_fetting_by ~ "Concerned that the money I have or will save wont last",
                                           age_groups ~ "Age", 
@@ -327,10 +332,10 @@ unmatched_table <- tbl_summary(analysis_data, include = c("occupation",
 
 
 
-match_table <- tbl_summary(analysis_match_data, include = c("occupation",
+match_table <- tbl_summary(analysis_match_data, include = c("occupation", "employment_impact_laid_off",
                                                         "money_fetting_by", "age_groups", 
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
-                             by = money_fetting_by,
+                             by = employment_impact_laid_off,
                              label = list(occupation ~ "Occupation",
                                           money_fetting_by ~ "Concerned that the money I have or will save wont last",
                                           age_groups ~ "Age", 
@@ -347,7 +352,8 @@ match_table <- tbl_summary(analysis_match_data, include = c("occupation",
                                          age_groups ~ "categorical",
                                          income ~ "categorical",
                                          own_rent ~ "categorical",
-                                         gender ~ "categorical")) %>% 
+                                         gender ~ "categorical",
+                                         money_fetting_by ~ "categorical")) %>% 
   add_p(test = everything() ~ "fisher.test") 
 
 
@@ -366,23 +372,28 @@ balance_table <- tbl_merge(tbls = list(unmatched_table,
 
 
 ```{r Regression}
-gad_reg <- lm(gad_total ~ money_fetting_by, data = analysis_match_data)
-summary(gad_reg)
+# Check to see if models are different including matched variables as covariates in the regression
 
-gad_reg_covariates <- lm(gad_total ~ money_fetting_by + occupation + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
-summary(gad_reg_covariates)
+phq_lm <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = analysis_match_data)
 
+phq_lm_w_cov <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by + occupation + age_groups + gender + identity_lgbtq + identity_bipoc + income + own_rent, data = analysis_match_data)
 
-
-phq_reg <- lm(phq_total ~ money_fetting_by, data = analysis_match_data)
-summary(phq_reg)
+summary(phq_lm)
+summary(phq_lm_w_cov)
 
 
-phq_reg_covariates <- lm(phq_total ~ money_fetting_by + occupation + money_fetting_by + age_groups + gender + identity_lgbtq +identity_bipoc + income + own_rent, data = analysis_match_data)
-summary(phq_reg_covariates)
+gad_lm <- lm(gad_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = analysis_match_data)
+gad_lm_w_cov <- lm(gad_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by + occupation + age_groups + gender + identity_lgbtq + identity_bipoc + income + own_rent, data = analysis_match_data)
 
-phq_reg <- lm(phq_total ~ money_fetting_by, data = analysis_match_data)
-summary(phq_reg)
+summary(gad_lm)
+summary(gad_lm_w_cov)
+
+msummary(models = list("PHQ-2" = phq_lm, 
+                       "GAD-2" = gad_lm),
+         stars=c('*' = .1, '**' = .05, '***' = .01),
+         output = "//Users//aidanbodner//Desktop//regression_table.rtf")
+
+export_reg <- as.data.frame(export_reg)
 
 #the regressions including the covariates and excluding them look similar and thus it can be noted that our match is of sufficient quality to run the regression without including the covariates 
 ```
