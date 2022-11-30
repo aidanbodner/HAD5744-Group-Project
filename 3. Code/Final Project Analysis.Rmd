@@ -19,7 +19,6 @@ library(MatchIt) # For matching
 library(mice) # For imputation
 library(modelsummary) # For regression tables
 library(VIM) # To visualize missing data
-library(cowplot) # To create legend for histogram
 ```
 
 ```{r Data Cleaning}
@@ -260,7 +259,6 @@ summary_table_1 <- tbl_summary(analysis_data, include = c("gad_total", "phq_tota
                                           employment_impact_laid_off ~ "Laid off temporarily or permanently during COVID-19 Pandemic",
                                           phq_total ~ "PHQ Score",
                                           occupation ~ "Occupation",
-                                          money_fetting_by ~ "Concerned that the money I have or will save wont last",
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
@@ -287,7 +285,6 @@ summary_table_2 <- tbl_summary(analysis_data, include = c("gad_total", "phq_tota
                                           money_fetting_by ~ "I am just getting by financially",
                                           phq_total ~ "PHQ Score",
                                           occupation ~ "Occupation",
-                                          money_fetting_by ~ "Concerned that the money I have or will save wont last",
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
@@ -301,9 +298,7 @@ summary_table_2 <- tbl_summary(analysis_data, include = c("gad_total", "phq_tota
                                          age_groups ~ "categorical",
                                          income ~ "categorical",
                                          own_rent ~ "categorical",
-                                         gender ~ "categorical")) #%>% 
-  #as_gt %>%
-  #gt::gtsave(filename = "//Users//aidanbodner//Desktop//Summary.docx")
+                                         gender ~ "categorical"))
 
 summary_table <- tbl_merge(tbls = list(summary_table_1,
                                       summary_table_2)) %>%
