@@ -322,7 +322,6 @@ analysis_match <- matchit(employment_impact_laid_off ~ occupation + age_groups +
                             data = analysis_data,
                             method = "exact")
 
-summary(analysis_match)
 analysis_match_data <-  match.data(analysis_match)
 
 analysis_data$occupation <- as.factor(analysis_data$occupation)
