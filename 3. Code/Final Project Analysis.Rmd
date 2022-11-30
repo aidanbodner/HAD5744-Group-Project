@@ -321,19 +321,8 @@ analysis_match <- matchit(employment_impact_laid_off ~ occupation + age_groups +
                             identity_bipoc + income + own_rent,
                             data = analysis_data,
                             method = "exact")
-
+summary(analysis_match)
 analysis_match_data <-  match.data(analysis_match)
-
-analysis_data$occupation <- as.factor(analysis_data$occupation)
-analysis_data$employment_impact_laid_off <- as.factor(analysis_data$employment_impact_laid_off)
-analysis_data$money_fetting_by <- as.factor(analysis_data$money_fetting_by)
-analysis_data$age_groups <- as.factor(analysis_data$age_groups)
-analysis_data$gender <- as.factor(analysis_data$gender)
-analysis_data$identity_lgbtq <- as.factor(analysis_data$identity_lgbtq)
-analysis_data$identity_bipoc <- as.factor(analysis_data$identity_bipoc)
-analysis_data$income <- as.factor(analysis_data$income)
-analysis_data$own_rent <- as.factor(analysis_data$own_rent)
-
 
 
 
