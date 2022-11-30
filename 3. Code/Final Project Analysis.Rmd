@@ -252,11 +252,12 @@ analysis_data <- read.csv("/Users/aidanbodner/Documents/GitHub/HAD5744-Group-Pro
 
 ```{r Summary Statistics}
 
-summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total", "occupation",
-                                                        "money_fetting_by", "age_groups", 
+summary_table_1 <- tbl_summary(analysis_data, include = c("gad_total", "phq_total", "occupation",
+                                                        "money_fetting_by", "age_groups", "employment_impact_laid_off",
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
-                             by = money_fetting_by,
                              label = list(gad_total ~ "GAD Score",
+                                          money_fetting_by ~ "I am just getting by financially",
+                                          employment_impact_laid_off ~ "Laid off temporarily or permanently during COVID-19 Pandemic",
                                           phq_total ~ "PHQ Score",
                                           occupation ~ "Occupation",
                                           money_fetting_by ~ "Concerned that the money I have or will save wont last",
@@ -273,9 +274,43 @@ summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total"
                                          age_groups ~ "categorical",
                                          income ~ "categorical",
                                          own_rent ~ "categorical",
-                                         gender ~ "categorical")) %>% 
+                                         gender ~ "categorical"))
+
+
+
+
+summary_table_2 <- tbl_summary(analysis_data, include = c("gad_total", "phq_total", "occupation",
+                                                        "money_fetting_by", "age_groups", "employment_impact_laid_off",
+                                                        "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
+                             by = employment_impact_laid_off,
+                             label = list(gad_total ~ "GAD Score",
+                                          money_fetting_by ~ "I am just getting by financially",
+                                          phq_total ~ "PHQ Score",
+                                          occupation ~ "Occupation",
+                                          money_fetting_by ~ "Concerned that the money I have or will save wont last",
+                                          age_groups ~ "Age", 
+                                          gender ~ "Gender", 
+                                          identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
+                                          identity_bipoc ~ "Person of colour (e.g., Black, Indigenous, Asian  or other racialized minority)",
+                                          income ~ "Income",
+                                          own_rent ~ "Dwelling Ownership"), 
+                             missing = "no", 
+                             type = list(identity_lgbtq ~ "categorical",
+                                         identity_bipoc ~ "categorical",
+                                         occupation ~ "categorical",
+                                         age_groups ~ "categorical",
+                                         income ~ "categorical",
+                                         own_rent ~ "categorical",
+                                         gender ~ "categorical")) #%>% 
+  #as_gt %>%
+  #gt::gtsave(filename = "//Users//aidanbodner//Desktop//Summary.docx")
+
+summary_table <- tbl_merge(tbls = list(summary_table_1,
+                                      summary_table_2)) %>%
   as_gt %>%
-  gt::gtsave(filename = "//Users//aidanbodner//Desktop//Summary.docx")
+  gt::gtsave(file = "//Users//aidanbodner//Desktop//summary_table.docx")
+
+
 
 
 ```
@@ -402,12 +437,17 @@ msummary(models = list("PHQ-2" = phq_lm,
 analysis_match_data$gad_clinical_cut <- ifelse(analysis_match_data$gad_total >= 3,1,0) #creating a binary variable based on the clinical cut off of GAD-2
 analysis_match_data$phq_clinical_cut <- ifelse(analysis_match_data$phq_total >= 3,1,0)
  
-table(analysis_match_data$money_fetting_by,analysis_match_data$gad_clinical_cut)
-gad_chi <- chisq.test(analysis_match_data$money_fetting_by,analysis_match_data$gad_clinical_cut)
+gad_table <- table(analysis_match_data$money_fetting_by, analysis_match_data$gad_clinical_cut, analysis_match_data$employment_impact_laid_off)
 
+prop.table(gad_table, 1)*100
+gad_mantel <- mantelhaen.test(gad_table)
  
-table(analysis_match_data$money_fetting_by,analysis_match_data$phq_clinical_cut)
-phq_chi <- chisq.test(analysis_match_data$money_fetting_by,analysis_match_data$phq_clinical_cut)
+
+
+phq_table <- table(analysis_match_data$money_fetting_by, analysis_match_data$phq_clinical_cut, analysis_match_data$employment_impact_laid_off)
+
+prop.table(phq_table, 1)*100
+phq_mantel <- mantelhaen.test(phq_table)
 
 ```
 
@@ -417,17 +457,17 @@ phq_chi <- chisq.test(analysis_match_data$money_fetting_by,analysis_match_data$p
 aggplot <- aggr(analysis_data, cex.axis = .385)
  
 # Outcome histograms
-fig1 <- ggplot(analysis_data, aes(gad_total,group=money_fetting_by,fill=money_fetting_by)) +
+fig1 <- ggplot(analysis_data, aes(gad_total,group=employment_impact_laid_off,fill=employment_impact_laid_off)) +
   geom_histogram(binwidth = 1,alpha = 0.75) + theme_classic() +
-  labs(x = "GAD-2 Total Score", fill = "Financial Security")
+  labs(x = "GAD-2 Total Score", fill = "Laid Off")
  
-fig2 <- ggplot(analysis_data, aes(phq_total, group=money_fetting_by,fill=money_fetting_by)) +
+fig2 <- ggplot(analysis_data, aes(phq_total, group=employment_impact_laid_off,fill=employment_impact_laid_off)) +
   geom_histogram(binwidth = 1,alpha = 0.75) + theme_classic() +
-  labs(x = "PHQ-2 Total Score", fill = "Financial Security")
+  labs(x = "PHQ-2 Total Score", fill = "Laid Off")
 
 
 ggsave(plot = fig1, filename  = "//Users//aidanbodner//Desktop//GAD-2.png", dpi = 700)
-ggsave(plot = fig2, filename  = "//Users//aidanbodner//Desktop//PHQ-2.png", dpi = 300)
+ggsave(plot = fig2, filename  = "//Users//aidanbodner//Desktop//PHQ-2.png", dpi = 700)
  
 
 
