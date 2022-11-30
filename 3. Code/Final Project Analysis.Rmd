@@ -18,6 +18,8 @@ library(gt) # For outputting gt objects
 library(MatchIt) # For matching
 library(mice) # For imputation
 library(modelsummary) # For regression tables
+library(VIM) # To visualize missing data
+library(cowplot) # To create legend for histogram
 ```
 
 ```{r Data Cleaning}
@@ -279,12 +281,6 @@ summary_table <- tbl_summary(analysis_data, include = c("gad_total", "phq_total"
 ```
 
 
-```{r Summary Stats by }
-
-```
-
-
-
 ```{r Matching}
 analysis_match <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
                             identity_bipoc + income + own_rent,
@@ -312,7 +308,7 @@ unmatched_table <- tbl_summary(analysis_data, include = c("occupation", "employm
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
                              by = employment_impact_laid_off,
                              label = list(occupation ~ "Occupation",
-                                          money_fetting_by ~ "Concerned that the money I have or will save wont last",
+                                          money_fetting_by ~ "I am just getting by financially.",
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
@@ -337,7 +333,7 @@ match_table <- tbl_summary(analysis_match_data, include = c("occupation", "emplo
                                                         "gender", "identity_lgbtq", "identity_bipoc", "income", "own_rent"),
                              by = employment_impact_laid_off,
                              label = list(occupation ~ "Occupation",
-                                          money_fetting_by ~ "Concerned that the money I have or will save wont last",
+                                          money_fetting_by ~ "I am just getting by financially.",
                                           age_groups ~ "Age", 
                                           gender ~ "Gender", 
                                           identity_lgbtq ~ "Sexual or gender minority (e.g., LGBTQ2+)",
@@ -354,7 +350,7 @@ match_table <- tbl_summary(analysis_match_data, include = c("occupation", "emplo
                                          own_rent ~ "categorical",
                                          gender ~ "categorical",
                                          money_fetting_by ~ "categorical")) %>% 
-  add_p(test = everything() ~ "fisher.test") 
+  add_p(test = everything() ~ "fisher.test")
 
 
 balance_table <- tbl_merge(tbls = list(unmatched_table,
@@ -373,6 +369,9 @@ balance_table <- tbl_merge(tbls = list(unmatched_table,
 
 ```{r Regression}
 # Check to see if models are different including matched variables as covariates in the regression
+
+analysis_match_data$money_fetting_by <- as.factor(analysis_match_data$money_fetting_by)
+analysis_match_data$money_fetting_by <- relevel(analysis_match_data$money_fetting_by, ref = "Yes")
 
 phq_lm <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = analysis_match_data)
 
@@ -393,11 +392,46 @@ msummary(models = list("PHQ-2" = phq_lm,
          stars=c('*' = .1, '**' = .05, '***' = .01),
          output = "//Users//aidanbodner//Desktop//regression_table.rtf")
 
-export_reg <- as.data.frame(export_reg)
 
 #the regressions including the covariates and excluding them look similar and thus it can be noted that our match is of sufficient quality to run the regression without including the covariates 
 ```
 
+
+```{r Summary Stats by MH}
+
+analysis_match_data$gad_clinical_cut <- ifelse(analysis_match_data$gad_total >= 3,1,0) #creating a binary variable based on the clinical cut off of GAD-2
+analysis_match_data$phq_clinical_cut <- ifelse(analysis_match_data$phq_total >= 3,1,0)
+ 
+table(analysis_match_data$money_fetting_by,analysis_match_data$gad_clinical_cut)
+gad_chi <- chisq.test(analysis_match_data$money_fetting_by,analysis_match_data$gad_clinical_cut)
+
+ 
+table(analysis_match_data$money_fetting_by,analysis_match_data$phq_clinical_cut)
+phq_chi <- chisq.test(analysis_match_data$money_fetting_by,analysis_match_data$phq_clinical_cut)
+
+```
+
+
+```{r Figures}
+# Missing data
+aggplot <- aggr(analysis_data, cex.axis = .385)
+ 
+# Outcome histograms
+fig1 <- ggplot(analysis_data, aes(gad_total,group=money_fetting_by,fill=money_fetting_by)) +
+  geom_histogram(binwidth = 1,alpha = 0.75) + theme_classic() +
+  labs(x = "GAD-2 Total Score", fill = "Financial Security")
+ 
+fig2 <- ggplot(analysis_data, aes(phq_total, group=money_fetting_by,fill=money_fetting_by)) +
+  geom_histogram(binwidth = 1,alpha = 0.75) + theme_classic() +
+  labs(x = "PHQ-2 Total Score", fill = "Financial Security")
+
+
+ggsave(plot = fig1, filename  = "//Users//aidanbodner//Desktop//GAD-2.png", dpi = 700)
+ggsave(plot = fig2, filename  = "//Users//aidanbodner//Desktop//PHQ-2.png", dpi = 300)
+ 
+
+
+```
 
 
 
