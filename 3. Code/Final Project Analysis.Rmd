@@ -31,7 +31,7 @@ analysis_data <- raw_data[, c("gad_anxious", "gad_worry", "phq_little_interest",
                               "money_fetting_by","employment_impact_laid_off", "age_groups", "gender",
                               "identity_lgbtq", "identity_bipoc",
                               "educational_attainment", "income", 
-                              "own_rent")]
+                              "own_rent", "money_concerned")]
 
 # Scan through analysis dataframe to see variable class types
 for(values in names(analysis_data)){
@@ -111,11 +111,11 @@ analysis_data$occupation[analysis_data$occupation ==
                            "Natural and applied sciences and related occupationss"] <- "Health & Sciences"
 
 # How well do each of the statements describe you? - I am just getting by financially.
-analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Completely"] <- "Yes"
-analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Well"] <- "Yes"
-analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Somewhat"] <- "Yes"
-analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Not at all"] <- "No"
-analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Little"] <- "No"
+#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Completely"] <- "Yes"
+#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Well"] <- "Yes"
+#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Somewhat"] <- "Yes"
+#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Not at all"] <- "No"
+#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Little"] <- "No"
 
 # Age
 analysis_data$age_groups[analysis_data$age_groups == "16 to 19 years" 
@@ -212,7 +212,7 @@ analysis_data$identity_bipoc[analysis_data$identity_bipoc == "People of colour (
 
 
 
-analysis_data <- analysis_data[, c("gad_total", "phq_total", "occupation","employment_impact_laid_off", "age_groups", "gender", "identity_lgbtq", "identity_bipoc","income", "own_rent", "money_fetting_by")]
+analysis_data <- analysis_data[, c("gad_total", "phq_total", "occupation","employment_impact_laid_off", "age_groups", "gender", "identity_lgbtq", "identity_bipoc","income", "own_rent", "money_fetting_by", "money_concerned")]
 
 # Number of missing
 #analysis_data <- na.omit(analysis_data)
@@ -222,8 +222,38 @@ analysis_data <- analysis_data[, c("gad_total", "phq_total", "occupation","emplo
 
 ```
 
+```{r Scatter Plot of Exposure Vars}
+# Check differences between finacial security and money_concerned
 
-```{r}
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Completely"] <- 5
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Well"] <- 4
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Somewhat"] <- 3
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Not at all"] <- 2
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Little"] <- 1
+
+analysis_data$money_concerned[analysis_data$money_concerned == "Completely"] <- 5
+analysis_data$money_concerned[analysis_data$money_concerned == "Very Well"] <- 4
+analysis_data$money_concerned[analysis_data$money_concerned == "Somewhat"] <- 3
+analysis_data$money_concerned[analysis_data$money_concerned == "Not at all"] <- 2
+analysis_data$money_concerned[analysis_data$money_concerned == "Very Little"] <- 1
+
+analysis_data$money_concerned <- as.numeric(analysis_data$money_concerned)
+analysis_data$money_fetting_by <- as.numeric(analysis_data$money_fetting_by)
+
+
+cor(x = analysis_data$money_fetting_by, y = analysis_data$money_concerned, use = "complete.obs", method = "pearson")
+
+ggplot(analysis_data, aes(x = money_fetting_by, y = money_concerned)) + geom_point()
+
+plot(analysis_data$money_fetting_by, analysis_data$gad_total)
+
+```
+
+
+
+
+
+```{r Imputation}
 analysis_data$occupation <- as.factor(analysis_data$occupation)
 analysis_data$money_fetting_by <- as.factor(analysis_data$money_fetting_by)
 analysis_data$age_groups <- as.factor(analysis_data$age_groups)
@@ -467,9 +497,21 @@ fig2 <- ggplot(analysis_data, aes(phq_total, group=employment_impact_laid_off,fi
 
 ggsave(plot = fig1, filename  = "//Users//aidanbodner//Desktop//GAD-2.png", dpi = 700)
 ggsave(plot = fig2, filename  = "//Users//aidanbodner//Desktop//PHQ-2.png", dpi = 700)
- 
 
 
+
+
+
+```
+
+
+
+```{r, Reference List}
+print("=============================Works Cited=============================")
+loadedNamespaces() %>%
+  map(citation) %>%
+print(style = "text") # Adds citations for each package to end of .rmd file
+knitr::write_bib(file = 'packages.bib') # Constructs a citation file for all packages used in this file
 ```
 
 
