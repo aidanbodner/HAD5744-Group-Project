@@ -317,12 +317,19 @@ summary_table <- tbl_merge(tbls = list(summary_table_1,
 
 
 ```{r Matching}
+
+
+
 analysis_match <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
                             identity_bipoc + income + own_rent,
                             data = analysis_data,
-                            method = "exact")
+                            method = "nearest",
+                  replace = TRUE,
+                  distance = "scaled_euclidean",
+                  verbose = TRUE)
 summary(analysis_match)
 analysis_match_data <-  match.data(analysis_match)
+
 
 
 
@@ -347,9 +354,9 @@ unmatched_table <- tbl_summary(analysis_data, include = c("occupation", "employm
                                          own_rent ~ "categorical",
                                          gender ~ "categorical",
                                          money_fetting_by ~ "categorical")) %>% 
-  add_p(test = everything() ~ "fisher.test")
+  add_p(test = everything() ~ "chisq.test")
 
-
+chisq.test(analysis_data$employment_impact_laid_off, analysis_data$occupation)
 
 match_table <- tbl_summary(analysis_match_data, include = c("occupation", "employment_impact_laid_off",
                                                         "money_fetting_by", "age_groups", 
@@ -373,7 +380,7 @@ match_table <- tbl_summary(analysis_match_data, include = c("occupation", "emplo
                                          own_rent ~ "categorical",
                                          gender ~ "categorical",
                                          money_fetting_by ~ "categorical")) %>% 
-  add_p(test = everything() ~ "fisher.test")
+  add_p(test = everything() ~ "chisq.test")
 
 
 balance_table <- tbl_merge(tbls = list(unmatched_table,
@@ -391,10 +398,14 @@ balance_table <- tbl_merge(tbls = list(unmatched_table,
 
 
 ```{r Regression}
+
+# Create dummy variables (k-1) for financial security and unemployment status
+analysis_match_data$money_fetting_by <- ifelse(analysis_match_data$money_fetting_by == 'Yes', 1, 0)
+
+analysis_match_data$employment_impact_laid_off <- ifelse(analysis_match_data$employment_impact_laid_off == 'Yes', 1, 0)
+
 # Check to see if models are different including matched variables as covariates in the regression
 
-analysis_match_data$money_fetting_by <- as.factor(analysis_match_data$money_fetting_by)
-analysis_match_data$money_fetting_by <- relevel(analysis_match_data$money_fetting_by, ref = "Yes")
 
 phq_lm <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = analysis_match_data)
 
@@ -422,17 +433,17 @@ msummary(models = list("PHQ-2" = phq_lm,
 
 ```{r Summary Stats by MH}
 
-analysis_match_data$gad_clinical_cut <- ifelse(analysis_match_data$gad_total >= 3,1,0) #creating a binary variable based on the clinical cut off of GAD-2
-analysis_match_data$phq_clinical_cut <- ifelse(analysis_match_data$phq_total >= 3,1,0)
+analysis_data$gad_clinical_cut <- ifelse(analysis_data$gad_total >= 3,1,0) #creating a binary variable based on the clinical cut off of GAD-2
+analysis_data$phq_clinical_cut <- ifelse(analysis_data$phq_total >= 3,1,0)
  
-gad_table <- table(analysis_match_data$money_fetting_by, analysis_match_data$gad_clinical_cut, analysis_match_data$employment_impact_laid_off)
+gad_table <- table(analysis_data$money_fetting_by, analysis_data$gad_clinical_cut, analysis_data$employment_impact_laid_off)
 
 prop.table(gad_table, 1)*100
 gad_mantel <- mantelhaen.test(gad_table)
  
 
 
-phq_table <- table(analysis_match_data$money_fetting_by, analysis_match_data$phq_clinical_cut, analysis_match_data$employment_impact_laid_off)
+phq_table <- table(analysis_data$money_fetting_by, analysis_data$phq_clinical_cut, analysis_data$employment_impact_laid_off)
 
 prop.table(phq_table, 1)*100
 phq_mantel <- mantelhaen.test(phq_table)
