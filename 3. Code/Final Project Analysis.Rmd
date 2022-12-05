@@ -453,6 +453,7 @@ summary(gad_lm_w_cov)
 
 msummary(models = list("PHQ-2" = phq_lm, 
                        "GAD-2" = gad_lm),
+         conf_level = 0.95,
          stars=c('*' = .1, '**' = .05, '***' = .01),
          output = "//Users//aidanbodner//Desktop//regression_table.rtf")
 
