@@ -241,7 +241,13 @@ analysis_data$money_concerned <- as.numeric(analysis_data$money_concerned)
 analysis_data$money_fetting_by <- as.numeric(analysis_data$money_fetting_by)
 
 
-cor(x = analysis_data$money_fetting_by, y = analysis_data$money_concerned, use = "complete.obs", method = "pearson")
+cor_test <- cor(x = analysis_data$money_fetting_by, y = analysis_data$money_concerned, use = "complete.obs", method = "pearson")
+
+summary(cor_test)
+
+
+ggplot(data = analysis_data, aes(x = money_fetting_by, y = money_concerned)) + 
+  geom_point() + geom_jitter() + geom_smooth(method = "lm")
 
 ggplot(analysis_data, aes(x = money_fetting_by, y = money_concerned)) + geom_point()
 
@@ -348,8 +354,6 @@ summary_table <- tbl_merge(tbls = list(summary_table_1,
 
 ```{r Matching}
 
-
-
 analysis_match <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
                             identity_bipoc + income + own_rent,
                             data = analysis_data,
@@ -453,10 +457,12 @@ summary(gad_lm_w_cov)
 
 msummary(models = list("PHQ-2" = phq_lm, 
                        "GAD-2" = gad_lm),
-         conf_level = 0.95,
          stars=c('*' = .1, '**' = .05, '***' = .01),
+         fmt = '%.2f',
          output = "//Users//aidanbodner//Desktop//regression_table.rtf")
 
+confint(phq_lm)
+confint(gad_lm)
 
 #the regressions including the covariates and excluding them look similar and thus it can be noted that our match is of sufficient quality to run the regression without including the covariates 
 ```
@@ -504,6 +510,123 @@ ggsave(plot = fig2, filename  = "//Users//aidanbodner//Desktop//PHQ-2.png", dpi 
 
 
 ```
+
+```{r Robustness Check}
+# Exact match
+analysis_data$employment_impact_laid_off <- as.factor(analysis_data$employment_impact_laid_off)
+
+robust_match_exact <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
+                            identity_bipoc + income + own_rent,
+                            data = analysis_data,
+                            method = "exact",
+                  verbose = TRUE)
+
+summary(robust_match_exact)
+
+robust_match_exact_frame <- match.data(robust_match_exact)
+
+robust_match_exact_frame$money_fetting_by <- ifelse(robust_match_exact_frame$money_fetting_by == 'Yes', 1, 0)
+
+robust_match_exact_frame$employment_impact_laid_off <- ifelse(robust_match_exact_frame$employment_impact_laid_off == 'Yes', 1, 0)
+
+phq_lm_exact <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_exact_frame)
+
+gad_lm_exact <- lm(gad_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_exact_frame)
+
+# Nearest Neighbour -- With replacement
+robust_match_nearest_replace <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
+                            identity_bipoc + income + own_rent,
+                            data = analysis_data,
+                            method = "nearest",
+                  replace = TRUE,
+                  distance = "scaled_euclidean",
+                  verbose = TRUE)
+summary(robust_match_nearest_replace)
+robust_match_nearest_replace_frame <- match.data(robust_match_nearest_replace)
+
+robust_match_nearest_replace_frame$money_fetting_by <- ifelse(robust_match_nearest_replace_frame$money_fetting_by == 'Yes', 1, 0)
+
+robust_match_nearest_replace_frame$employment_impact_laid_off <- ifelse(robust_match_nearest_replace_frame$employment_impact_laid_off == 'Yes', 1, 0)
+
+
+phq_lm_NN_replace <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_nearest_replace_frame)
+
+gad_lm_NN_replace <- lm(gad_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_nearest_replace_frame)
+
+
+
+# Nearest Neighbour -- Without replacement
+robust_match_nearest_no_replace <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
+                            identity_bipoc + income + own_rent,
+                            data = analysis_data,
+                            method = "nearest",
+                  replace = FALSE,
+                  distance = "scaled_euclidean",
+                  verbose = TRUE)
+summary(robust_match_nearest_no_replace)
+robust_match_nearest_no_replace_frame <- match.data(robust_match_nearest_no_replace)
+
+robust_match_nearest_no_replace_frame$money_fetting_by <- ifelse(robust_match_nearest_no_replace_frame$money_fetting_by == 'Yes', 1, 0)
+
+robust_match_nearest_no_replace_frame$employment_impact_laid_off <- ifelse(robust_match_nearest_no_replace_frame$employment_impact_laid_off == 'Yes', 1, 0)
+
+
+phq_lm_NN_no_replace <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_nearest_no_replace_frame)
+
+gad_lm_NN_no_replace <- lm(gad_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_nearest_no_replace_frame)
+
+
+# Propensity Score
+robust_match_prop <- matchit(employment_impact_laid_off ~ occupation + age_groups + gender + identity_lgbtq +
+                            identity_bipoc + income + own_rent,
+                            data = analysis_data,
+                            method = "nearest",
+                  replace = TRUE,
+                  distance = "glm",
+                  caliper = ,
+                  verbose = TRUE)
+summary(robust_match_prop)
+robust_match_prop_frame <- match.data(robust_match_prop)
+
+robust_match_prop_frame$money_fetting_by <- ifelse(robust_match_prop_frame$money_fetting_by == 'Yes', 1, 0)
+
+robust_match_prop_frame$employment_impact_laid_off <- ifelse(robust_match_prop_frame$employment_impact_laid_off == 'Yes', 1, 0)
+
+
+phq_lm_propensity <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_prop_frame)
+
+gad_lm_propensity <- lm(gad_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by, data = robust_match_prop_frame)
+
+
+# Combine all outputs into one table
+
+# Table for PHQ
+msummary(models = list("Exact Matching" = phq_lm_exact,
+                       "Nearest Neighbour with Replacement" = phq_lm_NN_replace,
+                       "Nearest Neighbour without Replacement" = phq_lm_NN_no_replace,
+                       "Propensity Score Matching" = phq_lm_propensity),
+         title = "Effect of Employment Status and Financial Security on Depression",
+         fmt = '%.2f',
+         stars=c('*' = .1, '**' = .05, '***' = .01),
+         output = "//Users//aidanbodner//Desktop//PHQ_robust_regression_check.rtf")
+
+# Table for GAD
+msummary(models = list("Exact Matching" = gad_lm_exact,
+                       "Nearest Neighbour with Replacement" = gad_lm_NN_replace,
+                       "Nearest Neighbour without Replacement" = gad_lm_NN_no_replace,
+                       "Propensity Score Matching" = gad_lm_propensity),
+         title = "Effect of Employment Status and Financial Security on Generalized Anxiety Disorder",
+         fmt = '%.2f',
+         stars=c('*' = .1, '**' = .05, '***' = .01),
+         output = "//Users//aidanbodner//Desktop//GAD_robust_regression_check.rtf")
+
+
+```
+
+
+
+
+
 
 
 
