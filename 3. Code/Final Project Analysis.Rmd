@@ -445,6 +445,11 @@ phq_lm <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off
 
 phq_lm_w_cov <- lm(phq_total ~ employment_impact_laid_off + employment_impact_laid_off:money_fetting_by + occupation + age_groups + gender + identity_lgbtq + identity_bipoc + income + own_rent, data = analysis_match_data)
 
+
+vcov()
+
+plot(gad_lm)
+
 summary(phq_lm)
 summary(phq_lm_w_cov)
 
@@ -459,6 +464,7 @@ msummary(models = list("PHQ-2" = phq_lm,
                        "GAD-2" = gad_lm),
          stars=c('*' = .1, '**' = .05, '***' = .01),
          fmt = '%.2f',
+         vcov = "NeweyWest",
          output = "//Users//aidanbodner//Desktop//regression_table.rtf")
 
 confint(phq_lm)
