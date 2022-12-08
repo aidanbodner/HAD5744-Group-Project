@@ -111,11 +111,11 @@ analysis_data$occupation[analysis_data$occupation ==
                            "Natural and applied sciences and related occupationss"] <- "Health & Sciences"
 
 # How well do each of the statements describe you? - I am just getting by financially.
-#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Completely"] <- "Yes"
-#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Well"] <- "Yes"
-#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Somewhat"] <- "Yes"
-#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Not at all"] <- "No"
-#analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Little"] <- "No"
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Completely"] <- "Yes"
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Well"] <- "Yes"
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Somewhat"] <- "Yes"
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Not at all"] <- "No"
+analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Very Little"] <- "No"
 
 # Age
 analysis_data$age_groups[analysis_data$age_groups == "16 to 19 years" 
@@ -222,7 +222,7 @@ analysis_data <- analysis_data[, c("gad_total", "phq_total", "occupation","emplo
 
 ```
 
-```{r Scatter Plot of Exposure Vars}
+```{r Scatter Plot of Exposure Vars for 1st Robustness Check}
 # Check differences between finacial security and money_concerned
 
 analysis_data$money_fetting_by[analysis_data$money_fetting_by == "Completely"] <- 5
@@ -516,7 +516,7 @@ ggsave(plot = fig2, filename  = "//Users//aidanbodner//Desktop//PHQ-2.png", dpi 
 
 ```
 
-```{r Robustness Check}
+```{r Robustness Check No. 2}
 # Exact match
 analysis_data$employment_impact_laid_off <- as.factor(analysis_data$employment_impact_laid_off)
 
@@ -627,11 +627,6 @@ msummary(models = list("Exact Matching" = gad_lm_exact,
 
 
 ```
-
-
-
-
-
 
 
 
